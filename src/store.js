@@ -62,4 +62,8 @@ export const store = {
   setFilter(filter) {
     state.filter = filter
   },
+
+  clearCompleted() {
+    state.todos = state.todos.filter((todo) => !todo.done)
+  },
 }

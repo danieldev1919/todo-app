@@ -1,10 +1,17 @@
 <script setup>
+import { computed } from 'vue'
 import { store } from '../store'
 
 const filters = ['all', 'active', 'completed']
 
+const hasCompleted = computed(() => store.todos.some((todo) => todo.done))
+
 function setFilter(filter) {
   store.setFilter(filter)
+}
+
+function clearCompleted() {
+  store.clearCompleted()
 }
 </script>
 
@@ -18,6 +25,13 @@ function setFilter(filter) {
       class="filter-btn"
     >
       {{ filter.charAt(0).toUpperCase() + filter.slice(1) }}
+    </button>
+    <button
+      v-if="hasCompleted"
+      @click="clearCompleted"
+      class="filter-btn"
+    >
+      Clear completed
     </button>
   </div>
 </template>
