@@ -14,6 +14,17 @@ export default defineConfig([
   globalIgnores(['**/dist/**', '**/dist-ssr/**', '**/coverage/**']),
 
   {
+    name: 'app/node-globals',
+    files: ['server/**/*.js', 'src/**/__tests__/**/*.js'],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+        ...globals.browser,
+      },
+    },
+  },
+
+  {
     languageOptions: {
       globals: {
         ...globals.browser,

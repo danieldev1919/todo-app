@@ -5,8 +5,10 @@ import TodoList from './TodoList.vue'
 import TodoFilters from './TodoFilters.vue'
 import TodoFooter from './TodoFooter.vue'
 
-function onAdd(text) {
-  store.addTodo(text)
+function onAdd(payload) {
+  const text = typeof payload === 'string' ? payload : payload.text
+  const priority = typeof payload === 'string' ? false : payload.priority
+  store.addTodo(text, priority)
 }
 
 function onToggle(id) {
@@ -15,6 +17,13 @@ function onToggle(id) {
 
 function onDelete(id) {
   store.deleteTodo(id)
+}
+
+function onSetPriority(id) {
+  const todo = store.todos.find((t) => t.id === id)
+  if (todo) {
+    store.setPriority(id, !todo.priority)
+  }
 }
 </script>
 
@@ -26,6 +35,7 @@ function onDelete(id) {
       :todos="store.filteredTodos"
       @toggle="onToggle"
       @delete="onDelete"
+      @setpriority="onSetPriority"
     />
     <TodoFilters />
     <TodoFooter />
@@ -34,15 +44,29 @@ function onDelete(id) {
 
 <style scoped>
 .todo-app {
-  max-width: 500px;
-  margin: 40px auto;
-  padding: 0 20px;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 16px;
+  min-height: 100vh;
 }
 
 .todo-title {
   text-align: center;
-  font-size: 32px;
-  color: #333;
-  margin-bottom: 20px;
+  font-size: 28px;
+  font-weight: 700;
+  color: #e6edf3;
+  margin: 16px 0 24px;
+  letter-spacing: -0.5px;
+}
+
+@media (min-width: 640px) {
+  .todo-app {
+    padding: 40px 20px;
+  }
+
+  .todo-title {
+    font-size: 36px;
+    margin: 24px 0 32px;
+  }
 }
 </style>

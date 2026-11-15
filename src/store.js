@@ -1,9 +1,11 @@
 import { reactive, computed } from 'vue'
 
+const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3000/api'
+
 const state = reactive({
   todos: [],
   filter: 'all',
-  nextId: 1,
+  loading: false,
 })
 
 const filteredTodos = computed(() => {
@@ -17,6 +19,20 @@ const filteredTodos = computed(() => {
 })
 
 const todosRemaining = computed(() => state.todos.filter((todo) => !todo.done).length)
+
+async function fetchTodos() {
+  state.loading = true
+  try {
+    const res = await fetch(`${API_BASE}/todos`)
+    if (res.ok) {
+      state.todos = await res.json()
+    }
+  } catch {
+    // API not available, keep existing state
+  } finally {
+    state.loading = false
+  }
+}
 
 export const store = {
   get todos() {
@@ -35,27 +51,71 @@ export const store = {
     return todosRemaining.value
   },
 
-  addTodo(text) {
-    const trimmed = text.trim()
-    if (!trimmed) return
-    state.todos.push({
-      id: state.nextId++,
-      text: trimmed,
-      done: false,
-    })
+  get loading() {
+    return state.loading
   },
 
-  toggleTodo(id) {
-    const todo = state.todos.find((t) => t.id === id)
-    if (todo) {
-      todo.done = !todo.done
+  async addTodo(text, priority = false) {
+    const trimmed = text.trim()
+    if (!trimmed) return
+    try {
+      const res = await fetch(`${API_BASE}/todos`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: trimmed, priority }),
+      })
+      if (res.ok) {
+        const todo = await res.json()
+        state.todos.push(todo)
+      }
+    } catch {
+      // Fallback to local add if API unavailable
+      const id = state.todos.length > 0 ? Math.max(...state.todos.map(t => t.id)) + 1 : 1
+      state.todos.push({ id, text: trimmed, done: false, priority })
     }
   },
 
-  deleteTodo(id) {
+  async toggleTodo(id) {
+    const todo = state.todos.find((t) => t.id === id)
+    if (todo) {
+      todo.done = !todo.done
+      try {
+        await fetch(`${API_BASE}/todos/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ done: todo.done }),
+        })
+      } catch {
+        // API unavailable, local state already updated
+      }
+    }
+  },
+
+  async deleteTodo(id) {
     const index = state.todos.findIndex((t) => t.id === id)
     if (index !== -1) {
       state.todos.splice(index, 1)
+      try {
+        await fetch(`${API_BASE}/todos/${id}`, { method: 'DELETE' })
+      } catch {
+        // API unavailable, local state already updated
+      }
+    }
+  },
+
+  async setPriority(id, priority) {
+    const todo = state.todos.find((t) => t.id === id)
+    if (todo) {
+      todo.priority = priority
+      try {
+        await fetch(`${API_BASE}/todos/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ priority }),
+        })
+      } catch {
+        // API unavailable, local state already updated
+      }
     }
   },
 
@@ -64,6 +124,25 @@ export const store = {
   },
 
   clearCompleted() {
+    const completed = state.todos.filter((todo) => todo.done)
     state.todos = state.todos.filter((todo) => !todo.done)
+    // Delete completed from API in background
+    completed.forEach(async (todo) => {
+      try {
+        await fetch(`${API_BASE}/todos/${todo.id}`, { method: 'DELETE' })
+      } catch {
+        // ignore
+      }
+    })
+  },
+
+  async init() {
+    await fetchTodos()
+  },
+
+  resetForTest() {
+    state.todos = []
+    state.filter = 'all'
+    state.loading = false
   },
 }

@@ -8,7 +8,7 @@ defineProps({
   },
 })
 
-const emit = defineEmits(['toggle', 'delete'])
+const emit = defineEmits(['toggle', 'delete', 'setpriority'])
 </script>
 
 <template>
@@ -19,6 +19,7 @@ const emit = defineEmits(['toggle', 'delete'])
       :todo="todo"
       @toggle="emit('toggle', $event)"
       @delete="emit('delete', $event)"
+      @setpriority="emit('setpriority', $event)"
     />
   </ul>
 </template>

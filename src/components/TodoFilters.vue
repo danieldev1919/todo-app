@@ -39,30 +39,34 @@ function clearCompleted() {
 <style scoped>
 .todo-filters {
   display: flex;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 6px;
   justify-content: center;
-  padding: 12px 0;
+  padding: 16px 0 8px;
 }
 
 .filter-btn {
-  padding: 6px 16px;
-  border: 2px solid #ddd;
-  border-radius: 4px;
-  background: white;
+  padding: 8px 14px;
+  border: 1px solid #30363d;
+  border-radius: 20px;
+  background: #161b22;
   cursor: pointer;
-  font-size: 14px;
-  color: #555;
+  font-size: 13px;
+  color: #8b949e;
   transition: all 0.2s;
+  min-height: 36px;
+  min-width: 36px;
 }
 
 .filter-btn:hover {
-  border-color: #42b883;
-  color: #42b883;
+  border-color: #58a6ff;
+  color: #58a6ff;
 }
 
 .filter-btn.active {
-  border-color: #42b883;
-  background: #42b883;
-  color: white;
+  border-color: #58a6ff;
+  background: rgba(88, 166, 255, 0.15);
+  color: #58a6ff;
+  font-weight: 600;
 }
 </style>

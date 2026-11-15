@@ -15,8 +15,8 @@ import { store } from '../store'
   display: flex;
   justify-content: center;
   padding: 12px 0;
-  font-size: 14px;
-  color: #999;
+  font-size: 13px;
+  color: #484f58;
 }
 
 .items-left {
