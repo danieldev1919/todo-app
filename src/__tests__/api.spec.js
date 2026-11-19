@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import request from 'supertest'
-import { app, getDb } from '../../server/index'
+import { app, getDb, resetDb } from '../../server/index'
 
 describe('API', () => {
   let db
@@ -13,7 +13,7 @@ describe('API', () => {
 
   afterEach(() => {
     // Reset the db module cache so each test starts fresh
-    db = null
+    resetDb()
   })
 
   describe('GET /api/todos', () => {

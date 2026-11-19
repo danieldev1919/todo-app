@@ -89,7 +89,7 @@ app.put('/api/todos/:id', async (req, res) => {
   const { id } = req.params
   const { done, priority } = req.body
 
-  const existing = database.exec(`SELECT * FROM todos WHERE id = ${id}`)
+  const existing = database.exec('SELECT * FROM todos WHERE id = ?', [id])
   if (existing.length === 0 || existing[0].values.length === 0) {
     return res.status(404).json({ error: 'Todo not found' })
   }
@@ -101,7 +101,7 @@ app.put('/api/todos/:id', async (req, res) => {
   database.run('UPDATE todos SET done = ?, priority = ? WHERE id = ?', [newDone, newPriority, id])
   saveDb()
 
-  const updated = database.exec(`SELECT * FROM todos WHERE id = ${id}`)[0].values[0]
+  const updated = database.exec('SELECT * FROM todos WHERE id = ?', [id])[0].values[0]
   res.json({
     id: updated[0],
     text: updated[1],
@@ -141,4 +141,8 @@ if (process.env.NODE_ENV !== 'test') {
   })
 }
 
-export { app, getDb }
+function resetDb() {
+  db = null
+}
+
+export { app, getDb, resetDb }

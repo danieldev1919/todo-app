@@ -1,6 +1,6 @@
 import { reactive, computed } from 'vue'
 
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3000/api'
+const API_BASE = import.meta.env.VITE_API_BASE || '/api'
 
 const state = reactive({
   todos: [],
@@ -25,7 +25,8 @@ async function fetchTodos() {
   try {
     const res = await fetch(`${API_BASE}/todos`)
     if (res.ok) {
-      state.todos = await res.json()
+      const data = await res.json()
+      state.todos.splice(0, state.todos.length, ...data)
     }
   } catch {
     // API not available, keep existing state
@@ -70,7 +71,7 @@ export const store = {
       }
     } catch {
       // Fallback to local add if API unavailable
-      const id = state.todos.length > 0 ? Math.max(...state.todos.map(t => t.id)) + 1 : 1
+      const id = crypto.randomUUID()
       state.todos.push({ id, text: trimmed, done: false, priority })
     }
   },
@@ -125,15 +126,16 @@ export const store = {
 
   clearCompleted() {
     const completed = state.todos.filter((todo) => todo.done)
-    state.todos = state.todos.filter((todo) => !todo.done)
+    const remaining = state.todos.filter((todo) => !todo.done)
+    state.todos.splice(0, state.todos.length, ...remaining)
     // Delete completed from API in background
-    completed.forEach(async (todo) => {
+    Promise.allSettled(completed.map(async (todo) => {
       try {
         await fetch(`${API_BASE}/todos/${todo.id}`, { method: 'DELETE' })
       } catch {
         // ignore
       }
-    })
+    }))
   },
 
   async init() {
@@ -141,7 +143,7 @@ export const store = {
   },
 
   resetForTest() {
-    state.todos = []
+    state.todos.splice(0, state.todos.length)
     state.filter = 'all'
     state.loading = false
   },
