@@ -73,7 +73,7 @@ app.post('/api/todos', async (req, res) => {
   database.run('INSERT INTO todos (text, done, priority) VALUES (?, 0, ?)', [text.trim(), priority ? 1 : 0])
   const result = database.exec('SELECT last_insert_rowid() as id')
   const id = result[0].values[0][0]
-  const todo = database.exec(`SELECT * FROM todos WHERE id = ${id}`)[0].values[0]
+  const todo = database.exec('SELECT * FROM todos WHERE id = ?', [id])[0].values[0]
   saveDb()
   res.status(201).json({
     id: todo[0],
